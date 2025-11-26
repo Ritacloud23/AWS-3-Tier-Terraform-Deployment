@@ -11,10 +11,10 @@ spec:
   ingressClassName: external-nginx
   tls:
   - hosts:
-    - argocd.cloudwitches.online
-    secretName: argocd-cloudwitches-online
+    - argocd.penta-ops.online
+    secretName: argocd-penta-ops.online
   rules:
-  - host: argocd.cloudwitches.online
+  - host: argocd.penta-ops.online
     http:
       paths:
       - path: /
