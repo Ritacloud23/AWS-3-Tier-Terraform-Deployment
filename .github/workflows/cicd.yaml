@@ -39,44 +39,44 @@ jobs:
 
 
 
-      # - name: 'Install tfsec for security scanning'
-      #   run: |
-      #     curl -sLo tfsec https://github.com/aquasecurity/tfsec/releases/download/v1.28.11/tfsec-linux-amd64
-      #     chmod +x tfsec
-      #     ./tfsec --version
+      - name: 'Install tfsec for security scanning'
+        run: |
+          curl -sLo tfsec https://github.com/aquasecurity/tfsec/releases/download/v1.28.11/tfsec-linux-amd64
+          chmod +x tfsec
+          ./tfsec --version
 
-      # - name: 'Terraform Init'
-      #   run: terraform init
+      - name: 'Terraform Init'
+        run: terraform init
 
-      # - name: 'Terraform Format'
-      #   run: terraform fmt
+      - name: 'Terraform Format'
+        run: terraform fmt
 
-      # - name: 'Terraform Validate'
-      #   run: terraform validate
+      - name: 'Terraform Validate'
+        run: terraform validate
 
 
-      # - name: 'tfsec Security Scan.'
-      #   run: ./tfsec . || true
+      - name: 'tfsec Security Scan.'
+        run: ./tfsec . || true
 
-      # - name: Terraform Plan
-      #   run: terraform plan 
+      - name: Terraform Plan
+        run: terraform plan 
 
-     # - name: Terraform Apply.
-      #  run: terraform apply -auto-approve 
+      - name: Terraform Apply.
+        run: terraform apply -auto-approve 
 
-      #- name: 'install kubectl'
-       # run: |
-          # curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-         #  chmod +x ./kubectl
-          # sudo mv ./kubectl /usr/local/bin/kubectl
-     # - name: 'authenticate to EKS Cluster'
-     #   run: aws eks update-kubeconfig --name ${{ vars.EKS_CLUSTER_NAME }} --region us-east-1
+      - name: 'install kubectl'
+        run: |
+          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          chmod +x ./kubectl
+          sudo mv ./kubectl /usr/local/bin/kubectl
+      - name: 'authenticate to EKS Cluster'
+        run: aws eks update-kubeconfig --name ${{ vars.EKS_CLUSTER_NAME }} --region us-east-1
       
-     # - name: 'Deploying the ClusterIssuer to EKS'
-     #   run: kubectl apply -f ClusterIssuer.yaml
+      - name: 'Deploying the ClusterIssuer to EKS'
+        run: kubectl apply -f ClusterIssuer.yaml
 
-     # - name: 'Deploying argocd ingress rule to EKS'
-      #  run: kubectl apply -f ingress-argocd.yaml -n argocd
+      - name: 'Deploying argocd ingress rule to EKS'
+        run: kubectl apply -f ingress-argocd.yaml -n argocd
 
       #- name: Terraform Destroy
       #  run: terraform destroy -auto-approve 
