@@ -48,8 +48,8 @@ jobs:
       # ------------------------------
       - name: Authenticate to EKS Cluster
         run: |
-          aws eks update-kubeconfig \
-            --name ${{ secrets.EKS_CLUSTER_NAME }} \
+          aws eks update-kubeconfig 
+            --name ${{ secrets.EKS_CLUSTER_NAME }} 
             --region ${{ secrets.AWS_REGION }}
 
       # ------------------------------
