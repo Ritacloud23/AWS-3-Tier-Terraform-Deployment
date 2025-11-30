@@ -1,4 +1,4 @@
-resource "aws_eks_cluster" "eks" {
+resource"aws_eks_cluster" "eks" {
   name     = "${var.environment}-${var.cluster_name}"
   role_arn = aws_iam_role.eks_cluster_role.arn
   version  = var.eks_version
@@ -6,11 +6,6 @@ resource "aws_eks_cluster" "eks" {
     subnet_ids              = concat(var.public_subnet_ids, var.private_subnet_ids)
     endpoint_public_access  = true
     endpoint_private_access = true
-  }
-
-  access_config {
-    authentication_mode                         = "API_AND_CONFIG_MAP"
-    bootstrap_cluster_creator_admin_permissions = true
   }
 
   depends_on = [
