@@ -1,20 +1,20 @@
-#################################
-# EKS Outputs
-#################################
+# #################################
+# # EKS Outputs
+# #################################
 
-output "cluster_name" {
-  description = "EKS cluster name"
-  value       = aws_eks_cluster.eks.name
-}
+# output "cluster_name" {
+#   description = "EKS cluster name"
+#   value       = aws_eks_cluster.eks.name
+# }
 
-output "cluster_endpoint" {
-  description = "EKS cluster API endpoint"
-  value       = aws_eks_cluster.eks.endpoint
-}
+# output "cluster_endpoint" {
+#   description = "EKS cluster API endpoint"
+#   value       = aws_eks_cluster.eks.endpoint
+# }
 
-#################################
-# NGINX Ingress / LB Outputs
-#################################
+# #################################
+# # NGINX Ingress / LB Outputs
+# #################################
 
 # output "nginx_ingress_lb_dns" {
 #   description = "DNS name of the NGINX ingress load balancer"
