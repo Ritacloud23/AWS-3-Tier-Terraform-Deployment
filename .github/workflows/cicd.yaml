@@ -64,7 +64,7 @@ jobs:
       run: terraform apply -auto-approve
 
     # ------------------------------
-    # Install kubectl AFTER terraform apply succeeds
+    # Install kubectl AFTER Terraform Apply
     # ------------------------------
     - name: Install kubectl
       run: |
@@ -73,17 +73,37 @@ jobs:
         sudo mv kubectl /usr/local/bin/
 
     # ------------------------------
-    # Authenticate to EKS AFTER terraform apply
+    # Authenticate to EKS AFTER Terraform Apply
     # ------------------------------
     - name: Authenticate to EKS Cluster
       run: aws eks update-kubeconfig --name "${{ secrets.EKS_CLUSTER_NAME }}" --region "${{ secrets.AWS_REGION }}"
 
     # ------------------------------
-    # Deploy Kubernetes Addons
+    # Install Cert-Manager CRDs + Controller
     # ------------------------------
+    - name: Install Cert-Manager
+      run: |
+        # Install CRDs
+        kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.14.2/cert-manager.crds.yaml
 
+        # Add Helm repo
+        helm repo add jetstack https://charts.jetstack.io
+        helm repo update
+
+        # Install cert-manager into namespace
+        helm install cert-manager jetstack/cert-manager \
+          --namespace cert-manager \
+          --create-namespace \
+          --version v1.14.2
+
+    # ------------------------------
+    # Deploy ClusterIssuer AFTER Cert-Manager is installed
+    # ------------------------------
     - name: Deploy ClusterIssuer to EKS
       run: kubectl apply -f ClusterIssuer.yaml
 
+    # ------------------------------
+    # Deploy ArgoCD ingress rule
+    # ------------------------------
     - name: Deploy ArgoCD ingress rule
       run: kubectl apply -f ingress-argocd.yaml -n argocd
