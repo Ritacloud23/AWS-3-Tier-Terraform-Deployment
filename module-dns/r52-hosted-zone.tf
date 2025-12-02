@@ -5,7 +5,7 @@
 resource "aws_route53_zone" "r53_zone" {
   name          = var.domain_name
   comment       = "Managed by Terraform"
-  force_destroy = false
+  force_destroy = true
 
   tags = {
     Name        = "${var.environment}-hosted-zone"
@@ -14,10 +14,9 @@ resource "aws_route53_zone" "r53_zone" {
 }
 
 #########################################################
-# CNAME Records – All point to the Nginx LB Hostname
+# DNS CNAME RECORDS
 #########################################################
 
-# Bank App Frontend
 resource "aws_route53_record" "bank" {
   zone_id = aws_route53_zone.r53_zone.zone_id
   name    = "bank.${var.domain_name}"
@@ -26,7 +25,6 @@ resource "aws_route53_record" "bank" {
   records = [var.nginx_lb_hostname]
 }
 
-# Bank App Backend / API
 resource "aws_route53_record" "bankapi" {
   zone_id = aws_route53_zone.r53_zone.zone_id
   name    = "bankapi.${var.domain_name}"
@@ -35,7 +33,6 @@ resource "aws_route53_record" "bankapi" {
   records = [var.nginx_lb_hostname]
 }
 
-# ArgoCD
 resource "aws_route53_record" "argocd" {
   zone_id = aws_route53_zone.r53_zone.zone_id
   name    = "argocd.${var.domain_name}"

@@ -1,1 +1,19 @@
 .env
+
+
+# Terraform local state
+terraform.tfstate
+terraform.tfstate.backup
+.terraform/
+.terraform.lock.hcl
+
+# Provider binaries (prevent GitHub push error)
+.terraform/providers/
+
+# tfsec binary
+tfsec
+
+# Kubernetes & sensitive files
+*.pem
+*.key
+*.crt
