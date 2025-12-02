@@ -42,11 +42,13 @@ module "eks-deployment" {
 # ROUTE53 HOSTED ZONE + DNS RECORDS
 ##############################################
 module "route53-deployment" {
-  source = "./module_dns"
+  source = "./module-dns"
 
-  domain_name       = var.domain_name
-  nginx_lb_hostname = module.eks-deployment.nginx_ingress_load_balancer_hostname
+  environment         = var.environment
+  domain_name         = var.domain_name
+  nginx_lb_hostname   = module.eks-deployment.nginx_ingress_load_balancer_hostname
 }
+
 
 ##############################################
 # RDS MYSQL DATABASE
