@@ -93,5 +93,5 @@ variable "repository_name" {
 
 }
 
-variable "domain-name" {}
+variable "domain_name" {}
 variable "email" {}

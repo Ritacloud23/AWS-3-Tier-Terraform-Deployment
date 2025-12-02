@@ -1,15 +1,18 @@
-variable "environment" {}
-variable "domain-name" {}
-variable "nginx_ingress_lb_dns" {
-  description = "DNS name of the NGINX Ingress Load Balancer"
-  type        = string
+#############################################
+# Variables for Route53 Module
+#############################################
 
-}
-variable "nginx_lb_ip" {
-  description = "IP address of the NGINX Ingress Load Balancer"
+variable "environment" {
   type        = string
+  description = "Environment tag (e.g. dev, production)"
 }
-variable "nginx_ingress_load_balancer_hostname" {
-  description = "Hostname of the NGINX Ingress Load Balancer"
+
+variable "domain_name" {
   type        = string
+  description = "Root domain name (e.g. pentaops.online)"
+}
+
+variable "nginx_lb_hostname" {
+  type        = string
+  description = "Nginx Ingress Load Balancer hostname from EKS module"
 }

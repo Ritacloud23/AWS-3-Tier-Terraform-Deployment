@@ -83,7 +83,7 @@ variable "zone_name" {
   default     = "example.com"
 }
 
-variable "domain-name" {
+variable "domain_name" {
   description = "Domain name to be created"
   type        = string
   default     = "myapp.example.com"
