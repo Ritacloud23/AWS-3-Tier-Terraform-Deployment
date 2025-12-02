@@ -30,3 +30,15 @@ resource "helm_release" "nginx_ingress" {
     aws_eks_node_group.eks_node_group
   ]
 }
+
+
+############################################
+# Discover NGINX Ingress Load Balancer
+############################################
+data "aws_lb" "nginx_ingress" {
+  depends_on = [helm_release.nginx_ingress]
+
+  tags = {
+    "kubernetes.io/service-name" = "ingress-nginx/ingress-nginx-controller"
+  }
+}
