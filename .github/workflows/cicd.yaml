@@ -63,8 +63,9 @@ jobs:
       # ------------------------------------------------------
       # ⭐ Import existing nginx ingress into Terraform (safe)
       # ------------------------------------------------------
-      - name: Import existing NGINX Ingress into state
+      - name: Import existing NGINX Ingress into Terraform
         run: terraform import module.eks-deployment.helm_release.nginx_ingress ingress-nginx/nginx-ingress || true
+
 
       # ------------------------------
       # Terraform Apply

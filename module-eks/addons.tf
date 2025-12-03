@@ -25,7 +25,7 @@ provider "helm" {
 }
 
 ############################################
-# Adopt existing NGINX Ingress (avoid reinstall)
+# Adopt Existing NGINX Ingress Release
 ############################################
 resource "helm_release" "nginx_ingress" {
   name             = "nginx-ingress"
@@ -40,19 +40,16 @@ resource "helm_release" "nginx_ingress" {
     file("${path.module}/nginx-ingress-values.yaml")
   ]
 
-  # Prevent Terraform destroying or reinstalling existing helm release
   lifecycle {
+    # Prevent Terraform from trying to reinstall the Helm release
     ignore_changes = [
+      repository,
+      chart,
       version,
       values,
       set,
-      repository,
-      chart,
     ]
   }
-
-  wait   = false
-  atomic = false
 }
 
 ############################################
