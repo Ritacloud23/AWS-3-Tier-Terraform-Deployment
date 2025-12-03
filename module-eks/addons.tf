@@ -48,3 +48,4 @@ data "aws_lb" "nginx_ingress" {
     "kubernetes.io/service-name" = "ingress-nginx/ingress-nginx-controller"
   }
 }
+
