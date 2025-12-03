@@ -19,105 +19,68 @@ jobs:
       AWS_REGION: ${{ secrets.AWS_REGION }}
 
     steps:
-    # ------------------------------
-    # Checkout Repo
-    # ------------------------------
-    - name: Checkout repository
-      uses: actions/checkout@v3
 
-    # ------------------------------
-    # Setup Terraform
-    # ------------------------------
-    - name: Setup Terraform
-      uses: hashicorp/setup-terraform@v2
-      with:
-        cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+      # ------------------------------
+      # Checkout Repo
+      # ------------------------------
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-    # ------------------------------
-    # Install tfsec
-    # ------------------------------
-    - name: Install tfsec
-      run: |
-        curl -sLo tfsec https://github.com/aquasecurity/tfsec/releases/download/v1.28.11/tfsec-linux-amd64
-        chmod +x tfsec
+      # ------------------------------
+      # Setup Terraform
+      # ------------------------------
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v2
+        with:
+          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
 
-    # ------------------------------
-    # Terraform Init
-    # ------------------------------
-    - name: Terraform Init
-      run: terraform init
+      # ------------------------------
+      # Install tfsec
+      # ------------------------------
+      - name: Install tfsec
+        run: |
+          curl -sLo tfsec https://github.com/aquasecurity/tfsec/releases/download/v1.28.11/tfsec-linux-amd64
+          chmod +x tfsec
 
-    - name: Terraform Format
-      run: terraform fmt || true
+      # ------------------------------
+      # Terraform Init
+      # ------------------------------
+      - name: Terraform Init
+        run: terraform init
 
-    - name: Terraform Validate
-      run: terraform validate
+      - name: Terraform Format
+        run: terraform fmt || true
 
-    - name: TFSEC Security Scan
-      run: ./tfsec . || true
+      - name: Terraform Validate
+        run: terraform validate
 
-    - name: Terraform Plan
-      run: terraform plan
+      - name: TFSEC Security Scan
+        run: ./tfsec . || true
 
-    # ------------------------------------------------------
-    # ⭐ NEW STEP: Import existing nginx ingress into Terraform
-    # ------------------------------------------------------
-    - name: Import existing NGINX Ingress into Terraform state
-      run: terraform import module.eks-deployment.helm_release.nginx_ingress ingress-nginx/nginx-ingress || true
-    # The "|| true" prevents the job from failing 
-    # if it's already imported.
+      - name: Terraform Plan
+        run: terraform plan
 
-    # ------------------------------
-    # Terraform Apply
-    # ------------------------------
-    - name: Terraform Apply
-      run: terraform apply -auto-approve
+      # ------------------------------------------------------
+      # ⭐ Import existing nginx ingress into Terraform (safe)
+      # ------------------------------------------------------
+      - name: Import existing NGINX Ingress into state
+        run: terraform import module.eks-deployment.helm_release.nginx_ingress ingress-nginx/nginx-ingress || true
 
-    # ------------------------------
-    # Install kubectl
-    # ------------------------------
-    - name: Install kubectl
-      run: |
-        curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-        chmod +x kubectl
-        sudo mv kubectl /usr/local/bin/
+      # ------------------------------
+      # Terraform Apply
+      # ------------------------------
+      - name: Terraform Apply
+        run: terraform apply -auto-approve
 
-    # ------------------------------
-    # Install Helm
-    # ------------------------------
-    - name: Install Helm
-      run: |
-        curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+      # ------------------------------
+      # Install kubectl
+      # ------------------------------
+      - name: Install kubectl
+        run: |
+          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+          chmod +x kubectl
+          sudo mv kubectl /usr/local/bin/
 
-    # ------------------------------
-    # Authenticate to EKS cluster
-    # ------------------------------
-    - name: Authenticate to EKS Cluster
-      run: aws eks update-kubeconfig --name "${{ secrets.EKS_CLUSTER_NAME }}" --region "${{ secrets.AWS_REGION }}"
-
-    # ------------------------------
-    # Install Cert-Manager
-    # ------------------------------
-    - name: Install Cert-Manager
-      run: |
-        kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.14.2/cert-manager.crds.yaml
-
-        helm repo add jetstack https://charts.jetstack.io
-        helm repo update
-
-        helm upgrade --install cert-manager jetstack/cert-manager \
-          --namespace cert-manager \
-          --create-namespace \
-          --version v1.14.2
-
-    # ------------------------------
-    # Deploy ClusterIssuer
-    # ------------------------------
-    - name: Deploy ClusterIssuer to EKS
-      run: kubectl apply -f ClusterIssuer.yaml
-
-    # ------------------------------
-    # Deploy ArgoCD ingress rule
-    # ------------------------------
-    - name: Deploy ArgoCD ingress rule
-      run: kubectl apply -f ingress-argocd.yaml -n argocd
+      # ------------------------------
+      # Install Helm
+      # -------------------------
