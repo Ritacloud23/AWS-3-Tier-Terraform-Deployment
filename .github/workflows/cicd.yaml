@@ -1,87 +1,87 @@
 name: Deploy to AWS with Terraform
-
 on:
   push:
     branches:
       - main
-
 permissions:
-  contents: write
-  id-token: write
-
+    contents: write
+    id-token: write
 jobs:
   deploy-iac:
-    runs-on: [self-hosted, terraform]
-
+    runs-on: terraform
     env:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       AWS_REGION: ${{ secrets.AWS_REGION }}
-
     steps:
-
-      # ------------------------------
-      # Checkout Repo
-      # ------------------------------
       - name: Checkout repository
-        uses: actions/checkout@v3
-
-      # ------------------------------
-      # Setup Terraform
-      # ------------------------------
-      - name: Setup Terraform
-        uses: hashicorp/setup-terraform@v2
+        uses: actions/checkout@v2
+      - name: Setup GitHub OIDC
+        run: | 
+           curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+           unzip awscliv2.zip
+           sudo ./aws/install --bin-dir /usr/local/bin --install-dir /usr/local/aws-cli --update
+      - name: Configure AWS credentials using OIDC
+        uses: aws-actions/configure-aws-credentials@v4
         with:
-          cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
-
-      # ------------------------------
-      # Install tfsec
-      # ------------------------------
-      - name: Install tfsec
+          aws-region: ${{ secrets.AWS_REGION }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v1
+        with:
+            cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+            terraform_wrapper: false  # Critical: disable wrapper for raw output
+      - name: Install tfsec for security scanning
         run: |
           curl -sLo tfsec https://github.com/aquasecurity/tfsec/releases/download/v1.28.11/tfsec-linux-amd64
           chmod +x tfsec
-
-      # ------------------------------
-      # Terraform Init
-      # ------------------------------
+          sudo mv tfsec /usr/local/bin/
+          tfsec --version
       - name: Terraform Init
         run: terraform init
-
-      - name: Terraform Format
-        run: terraform fmt || true
-
-      - name: Terraform Validate
-        run: terraform validate
-
-      - name: TFSEC Security Scan
-        run: ./tfsec . || true
-
-      - name: Terraform Plan
-        run: terraform plan
-
-      # ------------------------------------------------------
-      # ⭐ Import existing nginx ingress into Terraform (safe)
-      # ------------------------------------------------------
-      - name: Import existing NGINX Ingress into Terraform
-        run: terraform import module.eks-deployment.helm_release.nginx_ingress ingress-nginx/nginx-ingress || true
-
-
-      # ------------------------------
-      # Terraform Apply
-      # ------------------------------
-      - name: Terraform Apply
-        run: terraform apply -auto-approve
-
-      # ------------------------------
-      # Install kubectl
-      # ------------------------------
-      - name: Install kubectl
-        run: |
-          curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
-          chmod +x kubectl
-          sudo mv kubectl /usr/local/bin/
-
-      # ------------------------------
-      # Install Helm
-      # -------------------------
+      # - name: Terraform Format
+      #   run: terraform fmt
+      # - name: Terraform Validate
+      #   run: terraform validate
+      # - name: tfsec Security Scan
+      #   run: tfsec . || true
+      # - name: Terraform Plan
+      #   run: terraform plan 
+      # - name: Terraform Apply
+      #   run: terraform apply -auto-approve
+      # - name: Export EKS cluster name from Terraform
+      #   id: tfoutputs
+      #   run: |
+      #     # Get the cluster name and sanitize it
+      #     CLUSTER_NAME=$(terraform output -raw eks_cluster_name | tr -d '\n' | tr -d '\r' | xargs)
+          
+      #     # Validate it's not empty
+      #     if [ -z "$CLUSTER_NAME" ]; then
+      #       echo "Error: CLUSTER_NAME is empty"
+      #       exit 1
+      #     fi
+          
+      #     # Write to GITHUB_ENV with proper delimiter format (safer for multi-line)
+      #     echo "CLUSTER_NAME=$CLUSTER_NAME" >> "$GITHUB_ENV"
+          
+      #     # Also output for verification
+      #     echo "Cluster name extracted: $CLUSTER_NAME"
+      # - name: Install kubectl
+      #   run: |
+      #     curl -LO "https://dl.k8s.io/release/$(curl -L -s https://dl.k8s.io/release/stable.txt)/bin/linux/amd64/kubectl"
+      #     chmod +x kubectl
+      #     sudo mv kubectl /usr/local/bin/
+      #     kubectl version --client
+      # - name: Authenticate to EKS Cluster
+      #   run: |
+      #     echo "Connecting to cluster: ${{ env.CLUSTER_NAME }}"
+      #     aws eks update-kubeconfig --name "${{ env.CLUSTER_NAME }}" --region "${{ secrets.AWS_REGION }}"
+      # - name: Verify kubectl connection
+      #   run: kubectl cluster-info
+      # - name: Deploy ClusterIssuer to EKS
+      #   run: kubectl apply -f ClusterIssuer.yaml
+      # - name: Deploy ArgoCD ingress rule to EKS
+      #   run: kubectl apply -f ingress-argocd.yaml -n argocd
+      - name: Terraform Destroy
+        run: terraform destroy -auto-approve 
